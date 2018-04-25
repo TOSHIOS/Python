@@ -1,26 +1,36 @@
 # -*- coding:UTF-8 -*-
 import requests
 from bs4 import BeautifulSoup
-import json
 import urllib
 import request
 
+server = 'http://www.jit.edu.cn/'
+url = 'http://www.jit.edu.cn/myNews_list_out.aspx?infotype=2'
+
 if __name__ == "__main__":
-    server = 'http://www.jit.edu.cn/'
-    url = 'http://www.jit.edu.cn/myNews_list_out.aspx?infotype=2'
+
+    session = requests.session()
+    
     #根据当前url获得网页回应
-    req = requests.get(url)
+    req = session.get(url)
     #print(req.text)
     
     #获取回应中的HTML内容
     html = req.text
 
-    data = {'__VIEWSTATE': ''}
+    data = {
+        '__EVENTTARGET': 'nextpage',
+        #'__EVENTARGUMENT': '',
+        #'__VIEWSTATE': '',
+        #'__VIEWSTATEGENERATOR': '0532EA8E',
+        '__EVENTVALIDATION': '/wEWBQKy8+1RAoTi0BsCx9KS/AkCibm18Q0CksDQ4AWHg0W0ujg3MQ+g4PzYmsAp/1MefQ==',
+        #'searchbox': '',
+        }
     
     subLink = BeautifulSoup(html,"html.parser")
     data['__VIEWSTATE'] = subLink.find('input',{'id':"__VIEWSTATE"})['value']
     
-    r = requests.post(url,data)
+    r = session.post(url)
     #利用BS函数对HTMl内容进行处理，具体请参照BS函数用法：http://beautifulsoup.readthedocs.io/zh_CN/latest/ 
     div_bf = BeautifulSoup(r.text,"html.parser")
     #获得html中class='typelist'的div部分
@@ -36,10 +46,12 @@ if __name__ == "__main__":
         print(each.string,each2.string,'\n',server + each.get('href'))
     
     
-    subLink = BeautifulSoup(r.text,"html.parser")
-    data['__VIEWSTATE'] = subLink.find('input',{'id':"__VIEWSTATE"})['value']
+    #subLink = BeautifulSoup(r.text,"html.parser")
+    #data['__VIEWSTATE'] = subLink.find('input',{'id':"__VIEWSTATE"})['value']
+        
+    # 获取下一页网页内容
     
-    r = requests.post(url,data)
+    r = session.post(url,data)
     #利用BS函数对HTMl内容进行处理，具体请参照BS函数用法：http://beautifulsoup.readthedocs.io/zh_CN/latest/ 
     div_bf = BeautifulSoup(r.text,"html.parser")
     #获得html中class='typelist'的div部分
