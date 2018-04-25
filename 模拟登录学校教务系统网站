@@ -64,7 +64,7 @@ headers = {
     'Connection': 'keep-alive',
     'Content-Length': '205',
     'Content-Type': 'application/x-www-form-urlencoded',
-    #'Cookie': 'zg_did=%7B%22did%22%3A%20%221622448c881b68-028ab6ee9b102f-c343567-144000-1622448c882314%22%7D; zg_=%7B%22sid%22%3A%201521027172485%2C%22updated%22%3A%201521027172488%2C%22info%22%3A%201521027172487%2C%22superProperty%22%3A%20%22%7B%7D%22%2C%22platform%22%3A%20%22%7B%7D%22%2C%22utm%22%3A%20%22%7B%7D%22%2C%22referrerDomain%22%3A%20%22ehall.jit.edu.cn%22%2C%22cuid%22%3A%20%221613001011%22%7D; ASP.NET_SessionId=wgmg4p451ea31mvovn1pyf55',
+    #'Cookie': '',
     'Host': 'jwxt.jit.edu.cn',
     'Origin': 'http://jwxt.jit.edu.cn',
     'Referer': 'http://jwxt.jit.edu.cn/default2.aspx',
@@ -256,9 +256,6 @@ class Application(tk.Frame):
         frame.pack(fill='both',expand='false')  
         tree=tk.Treeview(frame)#表格  
         tree["columns"]=("时间","星期一","星期二","星期三","星期四","星期五","星期六","星期日")  
-        #tree.column("姓名",width=100)   #表示列,不显示  
-        #tree.column("年龄",width=100)  
-        #tree.column("身高",width=100)  
   
         tree.heading("时间",text="时间")  #显示表头  
         tree.heading("星期一",text="星期一")  
