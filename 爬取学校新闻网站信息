@@ -18,40 +18,39 @@ if __name__ == "__main__":
     #获取回应中的HTML内容
     html = req.text
 
+    # 获取页码总数    
+    subLink = BeautifulSoup(html,"html.parser")
+    pageSum = subLink.find('span',{'id':"Label1"}).text
+    print('共',pageSum,'页')
+    
     data = {
         '__EVENTTARGET': 'nextpage',
         #'__EVENTARGUMENT': '',
-        #'__VIEWSTATE': '',
+        '__VIEWSTATE': '/wEPDwULLTEzODE2MTg0MjAPZBYCAgMPZBYOAgEPDxYCHgRUZXh0BQzpgJrnn6XlhazlkYpkZAIHDxYCHglpbm5lcmh0bWwFmyE8bGk+PGEgaHJlZj0nbXlOZXdzX3ZpZXdfb3V0LmFzcHg/aWQ9MzgxMzcmaW5mb3R5cGU9MiAnIHRhcmdldD0nX2JsYW5rJyBib3JkZXI9JzAnPuS4k+WIqeadg+i9rOiuqeWFrOekujwvYT48c3BhbiBjbGFzcz0ncHViZXInPlvnp5HmioDlpIQgMTgtNC0yM10gPC9zcGFuPjwvbGk+PGxpPjxhIGhyZWY9J215TmV3c192aWV3X291dC5hc3B4P2lkPTM4MTE2JmluZm90eXBlPTIgJyB0YXJnZXQ9J19ibGFuaycgYm9yZGVyPScwJz7kuJPliKnmnYPovazorqnlhaznpLo8L2E+PHNwYW4gY2xhc3M9J3B1YmVyJz5b56eR5oqA5aSEIDE4LTQtMjNdIDwvc3Bhbj48L2xpPjxsaT48YSBocmVmPSdteU5ld3Nfdmlld19vdXQuYXNweD9pZD0zODEwOCZpbmZvdHlwZT0yICcgdGFyZ2V0PSdfYmxhbmsnIGJvcmRlcj0nMCc+5YWz5LqO5Zu+5Lmm6aaG5Yqz5Yqo6IqC6Zet6aaG55qE6YCa55+lPC9hPjxzcGFuIGNsYXNzPSdwdWJlcic+W+WbvuS5pummhiAxOC00LTIwXSA8L3NwYW4+PC9saT48bGk+PGEgaHJlZj0nbXlOZXdzX3ZpZXdfb3V0LmFzcHg/aWQ9MzgxMDAmaW5mb3R5cGU9MiAnIHRhcmdldD0nX2JsYW5rJyBib3JkZXI9JzAnPuWFs+S6juS4vuWKnuWtpuS5oOi0r+W9u+WFmueahOWNgeS5neWkp+eyvuelnuWbvemYsuaVmeiCsuaaqOW+geWFteWuo+S8oOaWh+iJuuaZmuS8mueahOmAmuefpTwvYT48c3BhbiBjbGFzcz0ncGljJz48L3NwYW4+PHNwYW4gY2xhc3M9J3B1YmVyJz5b5a2m55Sf5bel5L2c5aSEIDE4LTQtMjBdIDwvc3Bhbj48L2xpPjxsaT48YSBocmVmPSdteU5ld3Nfdmlld19vdXQuYXNweD9pZD0zODA3NCZpbmZvdHlwZT0yICcgdGFyZ2V0PSdfYmxhbmsnIGJvcmRlcj0nMCc+5YWz5LqO57uE57uH5Y+C5Yqg6aaW5bGK5rGf6IuP55yB6auY5qCh4oCc5LqR6Iif5p2v4oCd5YWx6K+75LiA5pys5Lmm5rS75Yqo55qE6YCa55+lPC9hPjxzcGFuIGNsYXNzPSdwaWMnPjwvc3Bhbj48c3BhbiBjbGFzcz0ncHViZXInPlvlm77kuabppoYgMTgtNC0xOV0gPC9zcGFuPjwvbGk+PGxpPjxhIGhyZWY9J215TmV3c192aWV3X291dC5hc3B4P2lkPTM4MDY5JmluZm90eXBlPTIgJyB0YXJnZXQ9J19ibGFuaycgYm9yZGVyPScwJz41LjI15b+D55CG5YGl5bq35pWZ6IKy5rS75Yqo5pyI57O75YiX6K6y5bqn6YCa55+lPC9hPjxzcGFuIGNsYXNzPSdwdWJlcic+W+WtpueUn+W3peS9nOWkhCAxOC00LTE4XSA8L3NwYW4+PC9saT48bGk+PGEgaHJlZj0nbXlOZXdzX3ZpZXdfb3V0LmFzcHg/aWQ9MzgwNjImaW5mb3R5cGU9MiAnIHRhcmdldD0nX2JsYW5rJyBib3JkZXI9JzAnPuKAnOWUpOmGkuayieedoeeahOivu+S5puWNoeKAneKAlOKAlOi2heacn+WFjee9muWRqOa0u+WKqOmAmuefpTwvYT48c3BhbiBjbGFzcz0ncGljJz48L3NwYW4+PHNwYW4gY2xhc3M9J3B1YmVyJz5b5Zu+5Lmm6aaGIDE4LTQtMThdIDwvc3Bhbj48L2xpPjxsaT48YSBocmVmPSdteU5ld3Nfdmlld19vdXQuYXNweD9pZD0zODA2MCZpbmZvdHlwZT0yICcgdGFyZ2V0PSdfYmxhbmsnIGJvcmRlcj0nMCc+5YWz5LqOMjAxOOW5tOWKs+WKqOiKguaUvuWBh+eahOmAmuefpTwvYT48c3BhbiBjbGFzcz0ncHViZXInPlvpmaLplb/lip7lhazlrqQgMTgtNC0xOF0gPC9zcGFuPjwvbGk+PGxpPjxhIGhyZWY9J215TmV3c192aWV3X291dC5hc3B4P2lkPTM4MDI5JmluZm90eXBlPTIgJyB0YXJnZXQ9J19ibGFuaycgYm9yZGVyPScwJz7lhbPkuo7nu4Tnu4flj4LliqDnrKzkuIDlsYrigJzkuK3np5Hmna8mIzgyMjY75pm66LWi5pyq5p2lJiM4MjI2O+aOjOS4iuivl+ivjeWkp+i1m+KAneeahOmAmuefpTwvYT48c3BhbiBjbGFzcz0ncGljJz48L3NwYW4+PHNwYW4gY2xhc3M9J3B1YmVyJz5b5Zu+5Lmm6aaGIDE4LTQtMTZdIDwvc3Bhbj48L2xpPjxsaT48YSBocmVmPSdteU5ld3Nfdmlld19vdXQuYXNweD9pZD0zODAyNSZpbmZvdHlwZT0yICcgdGFyZ2V0PSdfYmxhbmsnIGJvcmRlcj0nMCc+5YWz5LqO5byA5bGV5a2m5qCh4oCc6ZiF6K+75LmL5pif4oCd6K+E6YCJ5rS75Yqo55qE6YCa55+lPC9hPjxzcGFuIGNsYXNzPSdwdWJlcic+W+WbvuS5pummhiAxOC00LTE2XSA8L3NwYW4+PC9saT48bGk+PGEgaHJlZj0nbXlOZXdzX3ZpZXdfb3V0LmFzcHg/aWQ9MzgwMTkmaW5mb3R5cGU9MiAnIHRhcmdldD0nX2JsYW5rJyBib3JkZXI9JzAnPuWFs+S6jumihuWPljIwMTctMjAxOOesrDHlrabmnJ/mma7pgJror53msLTlubPmtYvor5XnrYnnuqfor4HkuabnmoTpgJrnn6U8L2E+PHNwYW4gY2xhc3M9J3B1YmVyJz5b5Lq65paH5a2m6ZmiIDE4LTQtMTZdIDwvc3Bhbj48L2xpPjxsaT48YSBocmVmPSdteU5ld3Nfdmlld19vdXQuYXNweD9pZD0zODAxMSZpbmZvdHlwZT0yICcgdGFyZ2V0PSdfYmxhbmsnIGJvcmRlcj0nMCc+6YeR6Zm156eR5oqA5a2m6Zmi5rGf5a6B5qCh5Yy65YyX5Yy6MDfluaLlrabnlJ/lrr/oiI3lu7rorr7pobnnm67lj6/ooYzmgKfnoJTnqbbmiqXlkYrnvJbliLbmioDmnK/mnI3liqHkuK3moIfnu5PmnpzlhaznpLo8L2E+PHNwYW4gY2xhc3M9J3B1YmVyJz5b5ZCI5L2c5LiO5Y+R5bGV6KeE5YiS5aSEIDE4LTQtMTZdIDwvc3Bhbj48L2xpPjxsaT48YSBocmVmPSdteU5ld3Nfdmlld19vdXQuYXNweD9pZD0zODAxMCZpbmZvdHlwZT0yICcgdGFyZ2V0PSdfYmxhbmsnIGJvcmRlcj0nMCc+6auY6ZuF6Im65pyv6L+b5qCh5Zut5rS75Yqo5L+h5oGvPC9hPjxzcGFuIGNsYXNzPSdwdWJlcic+W+WbouWnlCAxOC00LTE2XSA8L3NwYW4+PC9saT48bGk+PGEgaHJlZj0nbXlOZXdzX3ZpZXdfb3V0LmFzcHg/aWQ9Mzc5NzMmaW5mb3R5cGU9MiAnIHRhcmdldD0nX2JsYW5rJyBib3JkZXI9JzAnPumHkeenkemdkuW5tOaAneS6q+axh++8iOesrOS6lOacn++8iea0u+WKqOS/oeaBrzwvYT48c3BhbiBjbGFzcz0ncHViZXInPlvlm6Llp5QgMTgtNC0xMl0gPC9zcGFuPjwvbGk+PGxpPjxhIGhyZWY9J215TmV3c192aWV3X291dC5hc3B4P2lkPTM3OTcxJmluZm90eXBlPTIgJyB0YXJnZXQ9J19ibGFuaycgYm9yZGVyPScwJz4yMDE35bm05bqm5pWZ6IGM5bel5L2P5oi/6KGl6LS06aKG5Y+W5Lq65ZGY5oOF5Ya15YWs56S6PC9hPjxzcGFuIGNsYXNzPSdwdWJlcic+W+WQjuWLpOeuoeeQhuWkhCAxOC00LTEyXSA8L3NwYW4+PC9saT48bGk+PGEgaHJlZj0nbXlOZXdzX3ZpZXdfb3V0LmFzcHg/aWQ9Mzc5NTYmaW5mb3R5cGU9MiAnIHRhcmdldD0nX2JsYW5rJyBib3JkZXI9JzAnPuWFs+S6juS4vuWKnuKAnOeslOS4i+eUn+S6keeDn++8jOeahuS4uuivu+S5puaEn+KAnSDlvq7kuabor4TlpKfotZvnmoTpgJrnn6U8L2E+PHNwYW4gY2xhc3M9J3B1YmVyJz5b5Zu+5Lmm6aaGIDE4LTQtMTBdIDwvc3Bhbj48L2xpPjxsaT48YSBocmVmPSdteU5ld3Nfdmlld19vdXQuYXNweD9pZD0zNzk0NSZpbmZvdHlwZT0yICcgdGFyZ2V0PSdfYmxhbmsnIGJvcmRlcj0nMCc+5YWz5LqO5byA5bGV4oCc5aOw5Yqo5paw5pe25Luj4oCd6YeR6Zm156eR5oqA5a2m6Zmi56ys5YWt5bGK5qCh5Zut5Li75oyB5Lq65aSn6LWb55qE6YCa55+lPC9hPjxzcGFuIGNsYXNzPSdwdWJlcic+W+WbouWnlCAxOC00LTEwXSA8L3NwYW4+PC9saT48bGk+PGEgaHJlZj0nbXlOZXdzX3ZpZXdfb3V0LmFzcHg/aWQ9Mzc5MjEmaW5mb3R5cGU9MiAnIHRhcmdldD0nX2JsYW5rJyBib3JkZXI9JzAnPuWFs+S6jjIwMTctMjAxOOesrDLlrabmnJ/vvIjmsZ/lroHmoKHljLrvvInmma7pgJror53mtYvor5Xlt6XkvZzlronmjpLnmoTpgJrnn6U8L2E+PHNwYW4gY2xhc3M9J3B1YmVyJz5b5Lq65paH5a2m6ZmiIDE4LTQtOF0gPC9zcGFuPjwvbGk+PGxpPjxhIGhyZWY9J215TmV3c192aWV3X291dC5hc3B4P2lkPTM3OTE4JmluZm90eXBlPTIgJyB0YXJnZXQ9J19ibGFuaycgYm9yZGVyPScwJz7lhbPkuo7nu4Tnu4flj4LliqDnrKzlm5vlsYrlm77kuabppobmna/lnKjlroHpq5jmoKHlpKflrabnlJ/oi7Hor63lj6Por7TlpKfotZvnmoTpgJrnn6U8L2E+PHNwYW4gY2xhc3M9J3B1YmVyJz5b5Zu+5Lmm6aaGIDE4LTQtOF0gPC9zcGFuPjwvbGk+PGxpPjxhIGhyZWY9J215TmV3c192aWV3X291dC5hc3B4P2lkPTM3ODk4JmluZm90eXBlPTIgJyB0YXJnZXQ9J19ibGFuaycgYm9yZGVyPScwJz7lhbPkuo7mjqjojZAyMDE45bm055yB57qn5LiJ5aW95a2m55Sf44CB5LyY56eA5a2m55Sf5bmy6YOo5ZKM5YWI6L+b54+t6ZuG5L2T55qE5YWs56S6PC9hPjxzcGFuIGNsYXNzPSdwaWMnPjwvc3Bhbj48c3BhbiBjbGFzcz0ncHViZXInPlvlrabnlJ/lt6XkvZzlpIQgMTgtNC00XSA8L3NwYW4+PC9saT5kAgkPFgIeB1Zpc2libGVoZAILDxYCHwJoZAIRDw8WAh8ABQExZGQCEw8PFgIfAAUDMTY3ZGQCFQ8PFgIfAAUEMzMyN2RkZGvbsWky1BOiHK8CO29IUTAdidqd',
         #'__VIEWSTATEGENERATOR': '0532EA8E',
         '__EVENTVALIDATION': '/wEWBQKy8+1RAoTi0BsCx9KS/AkCibm18Q0CksDQ4AWHg0W0ujg3MQ+g4PzYmsAp/1MefQ==',
         #'searchbox': '',
         }
-    
-    subLink = BeautifulSoup(html,"html.parser")
-    data['__VIEWSTATE'] = subLink.find('input',{'id':"__VIEWSTATE"})['value']
-    
-    r = session.post(url)
-    #利用BS函数对HTMl内容进行处理，具体请参照BS函数用法：http://beautifulsoup.readthedocs.io/zh_CN/latest/ 
-    div_bf = BeautifulSoup(r.text,"html.parser")
-    #获得html中class='typelist'的div部分
-    div = div_bf.find_all('div', class_ = 'typelist')
-    #获取div[0]部分的内容并对其进行处理
-    a_bf = BeautifulSoup(str(div[0]),"html.parser")
-    #获取div[0]中a的部分
-    a = a_bf.find_all('a')
-    #获得div[0]中span部分
-    b = a_bf.select('span')
-    for each,each2 in zip(a,b):
-        #each.string获取a中包含的字符，each2.string获得b中包含的字符，each.get('href')获取a中包含的相对地址
-        print(each.string,each2.string,'\n',server + each.get('href'))
-    
-    
-    #subLink = BeautifulSoup(r.text,"html.parser")
+    headers = {
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+        'Accept-Encoding': 'gzip, deflate',
+        'Accept-Language': 'zh-CN,zh;q=0.9',
+        'Cache-Control': 'max-age=0',
+        'Connection': 'keep-alive',
+        'Content-Length': '6370',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        #'Cookie': 'zg_did=%7B%22did%22%3A%20%221622448c881b68-028ab6ee9b102f-c343567-144000-1622448c882314%22%7D; zg_=%7B%22sid%22%3A%201521027172485%2C%22updated%22%3A%201521027172488%2C%22info%22%3A%201521027172487%2C%22superProperty%22%3A%20%22%7B%7D%22%2C%22platform%22%3A%20%22%7B%7D%22%2C%22utm%22%3A%20%22%7B%7D%22%2C%22referrerDomain%22%3A%20%22ehall.jit.edu.cn%22%2C%22cuid%22%3A%20%221613001011%22%7D; ASP.NET_SessionId=ok5153ykfidioi55uujwqq55',
+        'Host': 'www.jit.edu.cn',
+        'Origin': 'http://www.jit.edu.cn',
+        'Referer': 'http://www.jit.edu.cn/myNews_list_out.aspx?infotype=2',
+        'Upgrade-Insecure-Requests': '1',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.117 Safari/537.36',
+        }
+
+    #subLink = BeautifulSoup(html,"html.parser")
     #data['__VIEWSTATE'] = subLink.find('input',{'id':"__VIEWSTATE"})['value']
-        
-    # 获取下一页网页内容
-    
-    r = session.post(url,data)
+
+    r = session.post(url,data=data)
     #利用BS函数对HTMl内容进行处理，具体请参照BS函数用法：http://beautifulsoup.readthedocs.io/zh_CN/latest/ 
     div_bf = BeautifulSoup(r.text,"html.parser")
     #获得html中class='typelist'的div部分
@@ -65,9 +64,27 @@ if __name__ == "__main__":
     for each,each2 in zip(a,b):
         #each.string获取a中包含的字符，each2.string获得b中包含的字符，each.get('href')获取a中包含的相对地址
         print(each.string,each2.string,'\n',server + each.get('href'))
-    
-#     bf = BeautifulSoup(html,"html.parser")
-#     #获得html中class='typelist'的div部分
-#     texts = bf.find_all('div', class_ = 'typelist')
-#     #利用']\n\n'代替']\x20'，实现换行
-#     print(texts[0].text.replace(']\x20',']\n\n'))
+    page = 1
+    print('第',page,'页爬取完毕')
+
+    for i in range(1,3):
+                
+        # 获取下一页网页内容
+        
+        r = session.post(url,data,headers)
+        #利用BS函数对HTMl内容进行处理，具体请参照BS函数用法：http://beautifulsoup.readthedocs.io/zh_CN/latest/ 
+        div_bf = BeautifulSoup(r.text,"html.parser")
+        #获得html中class='typelist'的div部分
+        div = div_bf.find_all('div', class_ = 'typelist')
+        #获取div[0]部分的内容并对其进行处理
+        a_bf = BeautifulSoup(str(div[0]),"html.parser")
+        #获取div[0]中a的部分
+        a = a_bf.find_all('a')
+        #获得div[0]中span部分
+        b = a_bf.select('span')
+        for each,each2 in zip(a,b):
+            #each.string获取a中包含的字符，each2.string获得b中包含的字符，each.get('href')获取a中包含的相对地址
+            print(each.string,each2.string,'\n',server + each.get('href'))
+        page += 1
+        print('第',page,'页爬取完毕')
+
