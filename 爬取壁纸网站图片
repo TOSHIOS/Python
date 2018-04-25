@@ -1,0 +1,47 @@
+# -*- coding:UTF-8 -*-
+import requests
+import urllib.request
+from bs4 import BeautifulSoup
+
+if __name__ == "__main__":
+    url = 'http://www.netbian.com/'
+    url2 = 'http://www.netbian.com/index_'
+    for page in range(1,4):
+        if page != 1:
+            url = url2+str(page)+'.htm'
+#         print(url)
+        #根据当前url获得网页回应
+        req = requests.get(url)  
+        req.encoding = 'GBK'
+#       print(req.text)
+    
+        #获取回应中的HTML内容
+        html = req.text
+#       print(html)
+
+        #利用BS函数对HTMl内容进行处理，具体请参照BS函数用法：http://beautifulsoup.readthedocs.io/zh_CN/latest/ 
+        div_bf = BeautifulSoup(html,"html.parser")
+        #获得html中class='typelist'的div部分
+        div = div_bf.find_all('div',class_='list')
+        div_bf = BeautifulSoup(str(div),"html.parser")
+        div = div_bf.find_all('ul')
+        div_bf = BeautifulSoup(str(div),"html.parser")
+        div = div_bf.find_all('li')
+#       print(div)
+        #获取div[0]部分的内容并对其进行处理
+        a_bf = BeautifulSoup(str(div),"html.parser")
+#       print(a_bf)
+        #获取div[0]中a的部分
+        a = a_bf.find_all('img')
+        for each in a:
+            try:
+                f = open('D:\\Tools\\Python\\PythonFile\\image\\'+str(each.get('alt')+".jpg"),'wb')
+                f.write(urllib.request.urlopen(each.get('src')).read())
+                f.close()
+#                 print(each.get('alt'),'\n',each.get('src'),'\n')
+            except FileNotFoundError:
+                pass
+        print('第',page,'页爬取完毕\n')
+    
+    print('共',page,'页\n')
+    print("爬取完毕\nAll Done!")
