@@ -1,0 +1,292 @@
+# -*- coding:utf-8 -*-
+
+# 用于http请求
+import requests
+
+# 解析HTML和XML
+import bs4
+
+# 操作系统的命令操作模块
+import os
+
+# 在内存中读写str
+import io
+
+# 图形界面第三方库
+from tkinter import *
+
+import tkinter as tk
+
+# 对话框
+import tkinter.messagebox as messagebox
+
+from  tkinter import ttk
+
+# 图像处理库
+from PIL import Image, ImageTk
+
+# 把URL字符串拆分成组件，能把组件合并成URL和将一个相对的URL转成一个抽象的URL，从而的到一个基本的URL标准格式。简单的说就是可以拆分URL，也可以拼接URL
+from urllib.parse import quote
+
+# 用于对字符串进行操作
+import  string
+
+# 正则表达式
+import re
+
+# from urllib.request import urlopen
+
+
+url = 'http://jwxt.jit.edu.cn/default2.aspx'#教务管理系统登录网址
+xs_url = 'http://jwxt.jit.edu.cn/xs_main.aspx?xh='#教务管理系统网址
+code_url = 'http://jwxt.jit.edu.cn/CheckCode.aspx'#验证码网址
+schedule_url = 'http://jwxt.jit.edu.cn/xskbcx.aspx?xh='#课表网址
+
+
+data = {
+    '__VIEWSTATE': '',
+    'txtUserName': '',#用户名
+    'Textbox1':'',
+    'TextBox2': '',#密码
+    'txtSecretCode': '',#验证码
+    'RadioButtonList1': '%D1%A7%C9%FA',#选择按钮 学生（这里需要手动编码成gbk编码）
+    'Button1': '',
+    'lbLanguage': '',
+    'hidPdrs': '',
+    'hidsc':'',
+    }
+
+headers = {
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+    'Accept-Encoding': 'gzip, deflate',
+    'Accept-Language': 'zh-CN,zh;q=0.9',
+    'Cache-Control': 'max-age=0',
+    'Connection': 'keep-alive',
+    'Content-Length': '205',
+    'Content-Type': 'application/x-www-form-urlencoded',
+    #'Cookie': 'zg_did=%7B%22did%22%3A%20%221622448c881b68-028ab6ee9b102f-c343567-144000-1622448c882314%22%7D; zg_=%7B%22sid%22%3A%201521027172485%2C%22updated%22%3A%201521027172488%2C%22info%22%3A%201521027172487%2C%22superProperty%22%3A%20%22%7B%7D%22%2C%22platform%22%3A%20%22%7B%7D%22%2C%22utm%22%3A%20%22%7B%7D%22%2C%22referrerDomain%22%3A%20%22ehall.jit.edu.cn%22%2C%22cuid%22%3A%20%221613001011%22%7D; ASP.NET_SessionId=wgmg4p451ea31mvovn1pyf55',
+    'Host': 'jwxt.jit.edu.cn',
+    'Origin': 'http://jwxt.jit.edu.cn',
+    'Referer': 'http://jwxt.jit.edu.cn/default2.aspx',
+    'Upgrade-Insecure-Requests': '1',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36',
+}
+
+
+class Application(tk.Frame):
+    def __init__(self, master=None):
+        
+        super().__init__(master)
+        self.pack()
+        self.create_widgets()
+
+    def create_widgets(self):
+        
+        # 用户名
+        self.nameLabel = Label(self, text='用户名：')
+        self.nameLabel.grid(row=0,column=0,sticky=W)
+        self.nameInput = Entry(self)
+        self.nameInput.grid(row=0,column=1,sticky=W)
+
+        # 密码
+        self.passwordLabel = Label(self, text='密   码：')
+        self.passwordLabel.grid(row=1,column=0,sticky=W)
+        self.passwordInput = Entry(self,show = "*")
+        self.passwordInput.grid(row=1,column=1,sticky=W)
+        
+        # 验证码
+        self.codeLabel = Label(self, text='验证码：')
+        self.codeLabel.grid(row=2,column=0,sticky=W)
+        self.codeInput = Entry(self)
+        self.codeInput.grid(row=2,column=1,sticky=W)
+        
+        # 获取验证码图片
+        self.code_refresh()
+
+        # 刷新验证码图片
+        self.codeRefresh = tk.Button(self, text="看不清，换一张", fg="blue")
+        session = self.code_refresh()
+        self.codeRefresh["command"] = self.code_refresh     # 点击按钮触发code_refresh重新获取验证码
+        self.codeRefresh.grid(row=2,column=2,sticky=W)
+
+        # 登录按钮
+        self.login = tk.Button(self)
+        self.login["text"] = "登录"
+        self.login["command"] = self.start    # 点击按钮触发start
+        self.login.grid(row=3,column=1,sticky=W)
+
+        # 退出按钮
+        self.quit = tk.Button(self, text="退出", fg="red",command=root.destroy)
+        self.quit.grid(row=3,column=1,sticky=E)
+
+        # 提示信息
+        self.ps = Label(self, text='已默认为学生')
+        self.ps.grid(row=4,column=0,sticky=W)
+
+
+    def code_refresh(self):
+        
+        image_bytes = session.get(code_url).content     # urlopen(code_url).read()  # 获取验证码网页回应
+        data_stream = io.BytesIO(image_bytes)   # 作为PIL图像对象开放
+        load = Image.open(data_stream)
+        
+        w, h = load.size
+        f = 1    # 缩放比
+        w_box,h_box = int(w*f),int(h*f) # 获取缩放后的图像大小
+        load_resized = load.resize((w_box,h_box),Image.ANTIALIAS)
+        render = ImageTk.PhotoImage(load_resized)
+        
+        img = Label(self,image=render)
+        img.image = render
+        img.place(x=150,y=45)
+
+        return session
+
+   
+    def get_post_data(self):
+    
+        html = session.get(url)#获取登陆界面的html
+        soup = bs4.BeautifulSoup(html.text, 'html.parser')
+    
+        __VIEWSTATE = soup.find('input', attrs={'name': '__VIEWSTATE'})['value']#找到验证参数__VIEWSTATE
+        #print(__VIEWSTATE)
+    
+        # 构造需要post的参数表
+        data['__VIEWSTATE'] = __VIEWSTATE
+        # 用户名
+        #data['txtUserName'] = self.nameInput.get()
+        # 密码
+        #data['TextBox2'] = self.passwordInput.get()
+        # 验证码
+        data['txtSecretCode'] = self.codeInput.get()
+        
+        return session
+
+
+    # 登录教务系统
+    def login_post_data(self):
+      
+        res = session.post(url,data=data,headers=headers)
+        #print(res.text)
+    
+        return session
+
+
+    def schedule(self,schedule_url,name):
+
+        header = {
+            'Referer': xs_url,
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36',
+            }
+        #print(schedule_url)
+        name = quote(name,safe = string.printable,encoding='gb2312')   # safe表示可以忽略的字符  
+        #print(name)
+        schedule_url = schedule_url+data['txtUserName']+'&xm='+name+'&gnmkdm=N121603'
+        #print(schedule_url)
+        res = session.get(schedule_url,headers=header)
+        soup = bs4.BeautifulSoup(res.text, 'html.parser')
+        #print(soup)
+
+        #测试
+        #label
+        #formlist = soup.find_all('table',class_='formlist noprint')
+        #print(formlist[0].text)
+
+        #table1
+        table1 = soup.find_all('table',class_='blacktab')
+        #print(table1[0])
+    
+        list=[]
+        for tr in table1[0].find_all('tr'):
+            #print(tr)
+            for td in tr.find_all('td'):
+                tdstr = str(td)
+                #print(td)
+                tdstr_replace = tdstr.replace(r'<br/>','\n')#用换行符替换'<br/>'  
+                #print(tdstr_replace)
+                while True:                      #去掉无用字符 
+                    index_begin = tdstr_replace.find("<")  
+                    index_end = tdstr_replace.find(">",index_begin + 1)  
+                    if index_begin == -1:  
+                        break  
+                    tdstr_replace = tdstr_replace.replace(tdstr_replace[index_begin:index_end+1],"")  
+                #print(tdstr_replace)
+                list.append(tdstr_replace)
+        #print(list)
+        #for i in range(0,len(list)):
+            #print(list[i])
+    
+        return list
+
+
+    def start(self):
+        
+        session = self.get_post_data()
+        #print(data)
+        xs2_url = xs_url+data['txtUserName']
+        #print(xs2_url)
+
+        # 模拟登录教务系统
+        session = self.login_post_data()
+        test = session.get(xs2_url)
+
+        # 测试看看是否能找到登陆后的信息
+        soup = bs4.BeautifulSoup(test.text, 'html.parser')
+        try:
+            name = soup.find('span', attrs={'id': 'xhxm'}).text
+            list = []
+            list = self.schedule(schedule_url,name[0:-2])
+        except:
+            name = '登录失败'
+            self.code_refresh()
+        #print(name)
+
+        messagebox.showinfo('Message', name+'\n'+str(list))
+
+
+        # 尝试做出表格
+        
+        #for i in range(0,len(list)):
+        #    if (i+1)%7 == 0:
+        #        bookList = []
+        #        bookList = list[i]
+        #print(bookList)    
+
+        frame=tk.Frame(root)  
+        frame.pack(fill='both',expand='false')  
+        tree=tk.Treeview(frame)#表格  
+        tree["columns"]=("时间","星期一","星期二","星期三","星期四","星期五","星期六","星期日")  
+        #tree.column("姓名",width=100)   #表示列,不显示  
+        #tree.column("年龄",width=100)  
+        #tree.column("身高",width=100)  
+  
+        tree.heading("时间",text="时间")  #显示表头  
+        tree.heading("星期一",text="星期一")  
+        tree.heading("星期二",text="星期二")
+        tree.heading("星期三",text="星期三")
+        tree.heading("星期四",text="星期四")
+        tree.heading("星期五",text="星期五")
+        tree.heading("星期六",text="星期六")
+        tree.heading("星期日",text="星期日") 
+
+        for item in list:  
+            tree.insert('','end',values=item)  
+        #tree.insert("",0,text="line1" ,values=("1","2","3")) #插入数据，  
+        #tree.insert("",1,text="line1" ,values=("1","2","3"))  
+        #tree.insert("",2,text="line1" ,values=("1","2","3"))  
+        #tree.insert("",3,text="line1" ,values=("1","2","3"))  
+  
+        tree.pack() 
+
+
+# 通过requests库构造一个浏览器session，这能帮我们自动、持久的管理cookies
+session = requests.session()
+
+root = tk.Tk()
+# 设置窗口标题:
+root.wm_title("正方教务管理系统——by_Toshio")
+# 设置窗口大小
+root.geometry("400x300+300+100")
+app = Application(master=root)
+# 主消息循环
+app.mainloop()
