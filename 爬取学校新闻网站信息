@@ -1,0 +1,61 @@
+# -*- coding:UTF-8 -*-
+import requests
+from bs4 import BeautifulSoup
+import json
+import urllib
+import request
+
+if __name__ == "__main__":
+    server = 'http://www.jit.edu.cn/'
+    url = 'http://www.jit.edu.cn/myNews_list_out.aspx?infotype=2'
+    #根据当前url获得网页回应
+    req = requests.get(url)
+    #print(req.text)
+    
+    #获取回应中的HTML内容
+    html = req.text
+
+    data = {'__VIEWSTATE': ''}
+    
+    subLink = BeautifulSoup(html,"html.parser")
+    data['__VIEWSTATE'] = subLink.find('input',{'id':"__VIEWSTATE"})['value']
+    
+    r = requests.post(url,data)
+    #利用BS函数对HTMl内容进行处理，具体请参照BS函数用法：http://beautifulsoup.readthedocs.io/zh_CN/latest/ 
+    div_bf = BeautifulSoup(r.text,"html.parser")
+    #获得html中class='typelist'的div部分
+    div = div_bf.find_all('div', class_ = 'typelist')
+    #获取div[0]部分的内容并对其进行处理
+    a_bf = BeautifulSoup(str(div[0]),"html.parser")
+    #获取div[0]中a的部分
+    a = a_bf.find_all('a')
+    #获得div[0]中span部分
+    b = a_bf.select('span')
+    for each,each2 in zip(a,b):
+        #each.string获取a中包含的字符，each2.string获得b中包含的字符，each.get('href')获取a中包含的相对地址
+        print(each.string,each2.string,'\n',server + each.get('href'))
+    
+    
+    subLink = BeautifulSoup(r.text,"html.parser")
+    data['__VIEWSTATE'] = subLink.find('input',{'id':"__VIEWSTATE"})['value']
+    
+    r = requests.post(url,data)
+    #利用BS函数对HTMl内容进行处理，具体请参照BS函数用法：http://beautifulsoup.readthedocs.io/zh_CN/latest/ 
+    div_bf = BeautifulSoup(r.text,"html.parser")
+    #获得html中class='typelist'的div部分
+    div = div_bf.find_all('div', class_ = 'typelist')
+    #获取div[0]部分的内容并对其进行处理
+    a_bf = BeautifulSoup(str(div[0]),"html.parser")
+    #获取div[0]中a的部分
+    a = a_bf.find_all('a')
+    #获得div[0]中span部分
+    b = a_bf.select('span')
+    for each,each2 in zip(a,b):
+        #each.string获取a中包含的字符，each2.string获得b中包含的字符，each.get('href')获取a中包含的相对地址
+        print(each.string,each2.string,'\n',server + each.get('href'))
+    
+#     bf = BeautifulSoup(html,"html.parser")
+#     #获得html中class='typelist'的div部分
+#     texts = bf.find_all('div', class_ = 'typelist')
+#     #利用']\n\n'代替']\x20'，实现换行
+#     print(texts[0].text.replace(']\x20',']\n\n'))
