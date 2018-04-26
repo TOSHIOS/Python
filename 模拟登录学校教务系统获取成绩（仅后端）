@@ -1,0 +1,122 @@
+# -*- coding:utf-8 -*-
+import requests
+import bs4
+import os
+from PIL import Image
+from urllib.parse import quote  
+import  string  
+
+url = 'http://jwxt.jit.edu.cn/default2.aspx'#教务管理系统登录网址
+xs_url = 'http://jwxt.jit.edu.cn/xs_main.aspx?xh='#教务管理系统网址
+code_url = 'http://jwxt.jit.edu.cn/CheckCode.aspx'#验证码网址
+schedule_url = 'http://jwxt.jit.edu.cn/xskbcx.aspx?xh='#课表网址
+
+data = {
+    '__VIEWSTATE': '',
+    'txtUserName': '1613001011',#用户名
+    'Textbox1':'' ,
+    'TextBox2': 'wc2456123009',#密码
+    'txtSecretCode': '',#验证码
+    'RadioButtonList1': '%D1%A7%C9%FA',#选择按钮 学生（这里需要手动编码成gbk编码）
+    'Button1': '',
+    'lbLanguage': '',
+    'hidPdrs': '',
+    'hidsc':'',
+    }
+headers = {
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+    'Accept-Encoding': 'gzip, deflate',
+    'Accept-Language': 'zh-CN,zh;q=0.9',
+    'Cache-Control': 'max-age=0',
+    'Connection': 'keep-alive',
+    'Content-Length': '205',
+    'Content-Type': 'application/x-www-form-urlencoded',
+    #'Cookie': 'zg_did=%7B%22did%22%3A%20%221622448c881b68-028ab6ee9b102f-c343567-144000-1622448c882314%22%7D; zg_=%7B%22sid%22%3A%201521027172485%2C%22updated%22%3A%201521027172488%2C%22info%22%3A%201521027172487%2C%22superProperty%22%3A%20%22%7B%7D%22%2C%22platform%22%3A%20%22%7B%7D%22%2C%22utm%22%3A%20%22%7B%7D%22%2C%22referrerDomain%22%3A%20%22ehall.jit.edu.cn%22%2C%22cuid%22%3A%20%221613001011%22%7D; ASP.NET_SessionId=wgmg4p451ea31mvovn1pyf55',
+    'Host': 'jwxt.jit.edu.cn',
+    'Origin': 'http://jwxt.jit.edu.cn',
+    'Referer': 'http://jwxt.jit.edu.cn/default2.aspx',
+    'Upgrade-Insecure-Requests': '1',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36',
+}
+
+# 通过requests库构造一个浏览器session，这能帮我们自动、持久的管理cookies，
+
+def get_post_data():
+
+    # 下载验证码图片
+    pic = session.get(code_url)
+    with open('ver_pic.png', 'wb') as f:
+        f.write(pic.content)
+
+    # 打开验证码图片
+    image = Image.open('{}/ver_pic.png'.format(os.getcwd()))
+    image.show()
+
+    html = session.get(url)#获取登陆界面的html
+    soup = bs4.BeautifulSoup(html.text, 'html.parser')
+
+    __VIEWSTATE = soup.find('input', attrs={'name': '__VIEWSTATE'})['value']#找到验证参数__VIEWSTATE
+    print(__VIEWSTATE)
+    
+    #构造需要post的参数表
+    data['__VIEWSTATE'] = __VIEWSTATE
+    data['txtSecretCode'] = input('请输入图片中的验证码')
+#     data['txtUserName'] = input("请输入学号")
+#     data['TextBox2'] = input("请输入密码")
+
+    return session
+
+
+# 登录教务系统
+def login():
+      
+    #session.post(url, data=data)
+    res = session.post(url,data=data,headers=headers)
+    #print(res.text)
+    
+    return session
+
+
+def schedule(schedule_url,name):
+
+    header = {
+        'Referer': xs_url,
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36',
+        }
+    print(schedule_url)
+    name = quote(name,safe = string.printable,encoding='gb2312')   # safe表示可以忽略的字符  
+    print(name)
+    schedule_url = schedule_url+data['txtUserName']+'&xm='+name+'&gnmkdm=N121603'
+    print(schedule_url)
+    #session.post(schedule_url,data=query,headers=header)
+    res = session.get(schedule_url,headers=header)
+    soup = bs4.BeautifulSoup(res.text, 'html.parser')
+    print(soup.text)
+
+    #formlist = soup.find_all('table',class_='formlist noprint')
+    #print(formlist.text)
+    
+    return
+
+    
+if __name__=='__main__':
+    
+    session = requests.session()
+    session = get_post_data()
+    print(data)
+    xs_url = xs_url+data['txtUserName']
+    print(xs_url)
+
+    # 模拟登录教务系统
+    session = login()
+    test = session.get(xs_url)
+
+    # 测试看看是否能找到登陆后的信息
+    soup = bs4.BeautifulSoup(test.text, 'html.parser')
+    try:
+        name = soup.find('span', attrs={'id': 'xhxm'}).text
+    except:
+        name = '登录失败'
+    print(name)
+
+    schedule(schedule_url,name[0:-2])
