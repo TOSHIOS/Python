@@ -18,6 +18,7 @@ class Application(tk.Frame):
         
         super().__init__(master)
         self.pack()
+        
         self.create_widgets()
 
     def create_widgets(self):
@@ -73,11 +74,13 @@ class Application(tk.Frame):
 
         tree.pack()
 
+        tree.delete()
+
 root = tk.Tk()
 # 设置窗口标题:
 root.wm_title("正方教务管理系统——by_Toshio")
 # 设置窗口大小
-#root.geometry("618+312")
+root.geometry("1450x650+35+50")
 app = Application(master=root)
 # 主消息循环
 app.mainloop()
