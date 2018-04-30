@@ -45,9 +45,9 @@ schedule_url = 'http://jwxt.jit.edu.cn/xskbcx.aspx?xh='#课程表网址
 
 data = {
     '__VIEWSTATE': '',
-    'txtUserName': '1613001011',#用户名
+    'txtUserName': '',#用户名
     'Textbox1':'',
-    'TextBox2': 'wc2456123009',#密码
+    'TextBox2': '',#密码
     'txtSecretCode': '',#验证码
     'RadioButtonList1': '%D1%A7%C9%FA',#选择按钮 学生（这里需要手动编码成gbk编码）
     'Button1': '',
