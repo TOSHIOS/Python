@@ -1,0 +1,533 @@
+# -*- coding:utf-8 -*-
+
+# 用于http请求
+import requests
+
+# 利用requests发出请求时可能会发生异常，requests中有一个exception库用来区分这些异常。
+from requests import exceptions
+
+# 解析HTML和XML
+import bs4
+
+# 操作系统的命令操作模块
+import os
+
+# 在内存中读写str
+import io
+
+# 图形界面第三方库
+from tkinter import *
+
+import tkinter as tk
+
+# 对话框
+import tkinter.messagebox as messagebox
+
+from  tkinter import ttk
+
+# 图像处理库
+from PIL import Image, ImageTk
+
+# 把URL字符串拆分成组件，能把组件合并成URL和将一个相对的URL转成一个抽象的URL，从而的到一个基本的URL标准格式。简单的说就是可以拆分URL，也可以拼接URL
+from urllib.parse import quote
+
+# 用于对字符串进行操作
+import  string
+
+# 正则表达式
+import re
+
+# from urllib.request import urlopen
+
+
+url = 'http://jwxt.jit.edu.cn/default2.aspx'#教务管理系统登录网址
+xs_url = 'http://jwxt.jit.edu.cn/xs_main.aspx?xh='#教务管理系统网址
+code_url = 'http://jwxt.jit.edu.cn/CheckCode.aspx'#验证码网址
+schedule_url = 'http://jwxt.jit.edu.cn/'#学生课程网址
+
+# 下拉列表框选项信息
+xscxList = [
+    ("xskbcx","N121603"),   #学生个人课表
+    ("xskscx","N121604")    #考试查询
+    ]
+# 下拉列表框选择
+choice = 0
+
+data = {
+    '__VIEWSTATE': '',
+    'txtUserName': '',#用户名
+    'Textbox1':'',
+    'TextBox2': '',#密码
+    'txtSecretCode': '',#验证码
+    'RadioButtonList1': '%D1%A7%C9%FA',#选择按钮 学生（这里需要手动编码成gbk编码）
+    'Button1': '',
+    'lbLanguage': '',
+    'hidPdrs': '',
+    'hidsc':'',
+    }
+
+headers = {
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+    'Accept-Encoding': 'gzip, deflate',
+    'Accept-Language': 'zh-CN,zh;q=0.9',
+    'Cache-Control': 'max-age=0',
+    'Connection': 'keep-alive',
+    'Content-Length': '',
+    'Content-Type': 'application/x-www-form-urlencoded',
+    #'Cookie': '',
+    'Host': 'jwxt.jit.edu.cn',
+    'Origin': 'http://jwxt.jit.edu.cn',
+    'Referer': 'http://jwxt.jit.edu.cn/default2.aspx',
+    'Upgrade-Insecure-Requests': '1',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36',
+    }
+
+
+class Application(tk.Frame):
+    
+    #初始化
+    def __init__(self, master=None):
+        
+        super().__init__(master)
+        #self.pack()
+        self.grid()
+        self.create_widgets()
+
+    # 设计界面GUI
+    def create_widgets(self):
+        
+        # 用户名
+        self.nameLabel = Label(self, text='用户名：')
+        self.nameLabel.grid(row=0,column=0,sticky=W)
+        self.nameInput = Entry(self)
+        self.nameInput.grid(row=0,column=1,sticky=W)
+
+        # 密码
+        self.passwordLabel = Label(self, text='密   码：')
+        self.passwordLabel.grid(row=1,column=0,sticky=W)
+        self.passwordInput = Entry(self,show = "*")
+        self.passwordInput.grid(row=1,column=1,sticky=W)
+        
+        # 验证码
+        self.codeLabel = Label(self, text='验证码：')
+        self.codeLabel.grid(row=2,column=0,sticky=W)
+        self.codeInput = Entry(self)
+        self.codeInput.grid(row=2,column=1,sticky=W)
+        
+        # 获取验证码图片
+        self.code_refresh()
+
+        # 刷新验证码图片
+        self.codeRefresh = tk.Button(self, text="看不清，换一张", fg="blue")
+        session = self.code_refresh()
+        self.codeRefresh["command"] = self.code_refresh     # 点击按钮触发code_refresh重新获取验证码
+        self.codeRefresh.grid(row=2,column=2,sticky=W)
+
+        # 登录按钮
+        self.login = tk.Button(self)
+        self.login["text"] = "登录"
+        self.login["command"] = self.start    # 点击按钮触发start
+        self.login.grid(row=3,column=1,sticky=W)
+
+        # 退出按钮
+        self.quit = tk.Button(self, text="退出", fg="red",command=root.destroy)
+        self.quit.grid(row=3,column=1,sticky=E)
+
+        # 提示信息
+        self.ps = Label(self, text="已默认为学生")
+        self.ps.grid(row=4,column=0,sticky=W)
+
+        # 下拉列表框        
+        self.variable = tk.StringVar()#窗体自带的文本，新建一个值
+        menuList = ["","学生个人课表","考试查询"]
+        # PS. 如果第一个选项不设置为一个空字符串，选择后第一个选项会消失。而相应的默认选项也要改为第二项。
+        self.variable.set(menuList[1])
+        self.openmenulist = ttk.OptionMenu(root,self.variable,*menuList) #初始化
+        self.openmenulist["width"] = 12 
+        self.openmenulist.bind('<Button>',self.makeChoice)  # 点击按钮触发makeChoice
+        self.openmenulist.grid(row=0,column=0,sticky=S)
+
+    # 选择函数    
+    def makeChoice(self,event=None):
+        
+        # print(self.variable.get())
+
+        # 声明choice是全局变量
+        global choice
+
+        # 依据列表下拉框选择的选项，更改choice
+        if self.variable.get() == "学生个人课表":
+            choice = 0
+        elif self.variable.get() == "考试查询":
+            choice = 1
+            
+        # print(choice)
+
+
+    # 验证码获取与刷新    
+    def code_refresh(self):
+
+        # 获取验证码网页回应
+        image_bytes = session.get(code_url).content     # urlopen(code_url).read()
+        data_stream = io.BytesIO(image_bytes)   # 作为PIL图像对象开放
+
+        #获取验证码图片信息
+        load = Image.open(data_stream)
+        
+        # 获取验证码图片的宽、高
+        w, h = load.size
+        f = 1    # 缩放比
+        # 指定缩放后的图像大小
+        w_box,h_box = int(w*f),int(h*f)
+        # 设置图像大小
+        load_resized = load.resize((w_box,h_box),Image.ANTIALIAS)
+        render = ImageTk.PhotoImage(load_resized)
+        
+        img = Label(self,image=render)
+        img.image = render
+        img.place(x=150,y=45)
+
+        return session
+
+
+    # 开始登陆
+    def start(self):
+        
+        self.makeChoice()
+        # PS. 由于列表下拉框的延迟性，需要手动再点击一次，才能触发修改过的事件，故将再次点击事件放在登录操作中
+        
+        session = self.get_post_data()
+        #print(data)
+        xs2_url = xs_url+data['txtUserName']
+        #print(xs2_url)
+
+        # 模拟登录教务系统
+        session = self.login_post_data()
+        test = session.get(xs2_url)
+
+        #print(test.text)
+
+        # 弹窗输出登录是否成功信息，以及成功登录后的用户姓名
+        soup = bs4.BeautifulSoup(test.text, 'html.parser')
+        try:
+            name = soup.find('span', attrs={'id': 'xhxm'}).text
+            list = []
+            list = self.schedule(schedule_url,name[0:-2])
+            messagebox.showinfo('Message', name+"，你好！")
+        except:
+            text = '登录失败'
+            #name = soup.find('script', attrs={'language': 'javascript'}).text
+            messagebox.showinfo('Message', text)
+            self.code_refresh()
+            
+        #print(name)
+
+
+    # 获取登录参数
+    def get_post_data(self):
+
+        # 获取登陆界面的html
+        html = session.get(url)
+        
+        soup = bs4.BeautifulSoup(html.text, 'html.parser')
+        # 获取验证参数__VIEWSTATE
+        __VIEWSTATE = soup.find('input', attrs={'name': '__VIEWSTATE'})['value']
+        #print(__VIEWSTATE)
+    
+        # 构造需要post的参数表
+        data['__VIEWSTATE'] = __VIEWSTATE
+        # 用户名
+##        data['txtUserName'] = self.nameInput.get()
+        # 密码
+##        data['TextBox2'] = self.passwordInput.get()
+        # 验证码
+        data['txtSecretCode'] = self.codeInput.get()
+        
+        return session
+
+
+    # 登录教务系统
+    def login_post_data(self):
+      
+        res = session.post(url,data=data,headers=headers)
+        #print(res.text)
+    
+        return session
+
+
+    # 获取课程表内容信息
+    def schedule(self,schedule_url,name):
+
+        header_schedule = {
+            'Referer': xs_url,
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36',
+            }
+        #print(schedule_url)
+
+        # 将name编码类型转换为gb2312编码
+        name = quote(name,safe = string.printable,encoding='gb2312')   # safe表示可以忽略的字符  
+        #print(name)
+
+        # 补齐课程表完整网址
+        schedule_url = schedule_url+xscxList[choice][0]+'.aspx?xh='+data['txtUserName']+'&xm='+name+'&gnmkdm='+xscxList[choice][1]
+        # print(schedule_url)
+
+        # 获取课程表网页内容信息
+        res = session.get(schedule_url,headers=header_schedule)
+        
+        soup = bs4.BeautifulSoup(res.text, 'html.parser')
+        # print(soup)
+
+        # 根据choice的值，修改标签参数tableLabel
+        if choice == 0:
+            tableLabel = "blacktab"
+            #self.timetable(list)
+            list = self.arrange_schedule(soup,tableLabel)
+            self.timetable(list)
+        elif choice == 1:
+            tableLabel = "datelist"
+            list = self.arrange_schedule(soup,tableLabel)
+            self.exam_timetable(list)
+
+
+    # 整理表格内容
+    def arrange_schedule(self,soup,tableLabel):
+        
+        # 获取table1标签内容
+        table1 = soup.find_all('table',class_=tableLabel)
+        #print(table1[0])
+
+        # 整理table1标签内容，用list存储
+        list=[]
+        for tr in table1[0].find_all('tr'):
+            #print(tr)
+            for td in tr.find_all('td'):
+                tdstr = str(td) # 字符串化
+                #print(td)
+                tdstr_replace = tdstr.replace(r'<br/>','\\n')   # 用换行符替换'<br/>'
+                # PS. '\\n'可以让数据在一个单元格中分行显示
+                
+                #print(tdstr_replace)
+                
+                while True:                      #去掉无用字符 
+                    index_begin = tdstr_replace.find("<")  
+                    index_end = tdstr_replace.find(">",index_begin + 1)  
+                    if index_begin == -1:  
+                        break  
+                    tdstr_replace = tdstr_replace.replace(tdstr_replace[index_begin:index_end+1],"")
+                    
+                #print(tdstr_replace)
+                    
+                list.append(tdstr_replace)
+        
+        # 输出list（测试）
+        print(list)
+        
+        #for i in range(0,len(list)):
+            #print(list[i])
+    
+        return list
+        
+    # 生成课程表表格
+    def timetable(self,list):
+
+        # 尝试做出表格
+
+        bookList = []
+        
+        for i in range(0,len(list)):
+##            if list[i] == "早晨" or list[i] == "上午" or list[i] == "下午" or list[i] == "晚上":
+##                bookList.append(list[i])
+                
+            if list[i][0] == "第":
+                if int(list[i][1]) % 2 == 1 and list[i][2] == list[i][-1] and int(list[i][1]) <= 8:
+                    classnum = "第" + str(int(list[i][1]) + 1) + "节"
+                    list[i] = list[i]+'\\n\\n\\n\\n\\n'+classnum
+                    bookList.append(list[i:i+7])
+##                else:
+##                    bookList.append(list[i])
+
+        # 输出bookList（测试）
+        for i in range(0,len(bookList)):
+            print(bookList[i])
+            
+        # self.delete('1.0', tk.END) #无效
+            
+        # 隐藏之前组件
+        self.grid_forget()
+        
+        self.openmenulist.grid_forget()
+        # PS. 上一步的隐藏之前组件，由于未知bug并没有隐藏下拉列表框，需要单独隐藏
+
+
+        # 重新设置窗口大小
+        
+        # 设置窗口 宽、高
+        w = 1450
+        h = 650
+
+        # 计算 x, y 位置
+        x = (ws/2) - (w/2)
+        y = (hs/2) - (h/2)
+
+        # 设置窗口大小
+        root.geometry('%dx%d+%d+%d' % (w, h, x, y))
+        
+        
+        ttk.Style().configure('Treeview',rowheight=155)
+        # PS. rowheight为表格行高（除首行外）
+        frame=tk.Frame(root)
+        
+        frame.grid()
+        #frame.pack(fill='both', expand='false')
+        
+        tree=ttk.Treeview(frame, show='headings',height=4)
+        # PS. show='headings'隐藏首列，height为表格行数（除首行外）
+        
+        tree["columns"]=("row0","row1","row2","row3","row4","row5","row6","row7")
+
+        # 表格的标题
+        tree.column("row0", width=50, anchor="center")
+        tree.column("row1", anchor="center")
+        tree.column("row2", anchor="center")
+        tree.column("row3", anchor="center")
+        tree.column("row4", anchor="center")
+        tree.column("row5", anchor="center")
+        tree.column("row6", anchor="center")
+        tree.column("row7", anchor="center")
+        
+        tree.heading("row0", text="时间")  # 显示表头  
+        tree.heading("row1", text="星期一")  
+        tree.heading("row2", text="星期二")
+        tree.heading("row3", text="星期三")
+        tree.heading("row4", text="星期四")
+        tree.heading("row5", text="星期五")
+        tree.heading("row6", text="星期六")
+        tree.heading("row7", text="星期日") 
+
+        # 向表格中插入数据
+        for item in bookList:
+            
+            # print(item)
+            str_item = ''
+            # 插入前整理数据
+            for i in range(0, len(item)):
+                str_item = str_item+'\n'+str(item[i])
+            # 插入    
+            tree.insert('','end',values=str_item)
+
+        tree.grid()
+
+
+    # 生成考试表格
+    def exam_timetable(self,list):
+
+        # 尝试做出表格
+
+        bookList = []
+
+        for i in range(8,len(list)):
+            if i%8 == 0:
+                bookList.append(list[i:i+8])
+                
+        
+        for i in range(0,len(bookList)):
+            print(bookList[i])
+            
+        # self.delete('1.0', tk.END) #无效
+            
+        # 隐藏之前组件
+        self.grid_forget()
+        
+        self.openmenulist.grid_forget()
+        # PS. 上一步的隐藏之前组件，由于未知bug并没有隐藏下拉列表框，需要单独隐藏
+
+
+        # 重新设置窗口大小
+        
+        # 设置窗口 宽、高
+        w = 1070
+        h = 650
+
+        # 计算 x, y 位置
+        x = (ws/2) - (w/2)
+        y = (hs/2) - (h/2)
+
+        # 设置窗口大小
+        root.geometry('%dx%d+%d+%d' % (w, h, x, y))
+        
+        
+        ttk.Style().configure('Treeview')
+        # PS. rowheight为表格行高（除首行外）
+        frame=tk.Frame(root)
+        
+        frame.grid()
+        #frame.pack(fill='both', expand='false')
+        
+        tree=ttk.Treeview(frame, show='headings',height=1)
+        # PS. show='headings'隐藏首列，height为表格行数（除首行外）
+        
+        tree["columns"]=("row0","row1","row2","row3","row4","row5","row6","row7")
+
+        # 表格的标题
+        tree.column("row0", width=220, anchor="center")
+        tree.column("row1", anchor="center")
+        tree.column("row2", width=50, anchor="center")
+        tree.column("row3", anchor="center")
+        tree.column("row4", width=150, anchor="center")
+        tree.column("row5", width=100, anchor="center")
+        tree.column("row6", width=50, anchor="center")
+        tree.column("row7", width=100, anchor="center")
+        
+        tree.heading("row0", text="选课课号")  # 显示表头  
+        tree.heading("row1", text="课程名称")  
+        tree.heading("row2", text="姓名")
+        tree.heading("row3", text="考试时间")
+        tree.heading("row4", text="考试地点")
+        tree.heading("row5", text="考试形式")
+        tree.heading("row6", text="座位号")
+        tree.heading("row7", text="校区") 
+
+        # 向表格中插入数据
+        for item in bookList:
+            
+            # print(item)
+##            str_item = ''
+##            # 插入前整理数据
+##            for i in range(0, len(item)):
+##                str_item = str_item+'\n'+str(item[i])
+##            # 插入    
+            tree.insert('','end',values=item)
+
+        tree.grid()
+                         
+
+
+# 通过requests库构造一个浏览器session，这能帮我们自动、持久的管理cookies
+session = requests.session()
+
+# 构造窗体
+root = tk.Tk()
+
+# 设置窗口标题:
+root.wm_title("正方教务管理系统——by_Toshio")
+
+# 获取屏幕 宽、高
+ws = root.winfo_screenwidth()
+hs = root.winfo_screenheight()
+
+# 设置窗口 宽、高
+w = 400
+h = 300
+
+# 计算 x, y 位置
+x = (ws/2) - (w/2)
+y = (hs/2) - (h/2)
+
+# 设置窗口大小
+root.geometry('%dx%d+%d+%d' % (w, h, x, y))
+              
+app = Application(master=root)
+
+# 主消息循环
+app.mainloop()
