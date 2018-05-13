@@ -384,26 +384,26 @@ class Application(tk.Frame):
         tree=ttk.Treeview(frame, show='headings',height=4)
         # PS. show='headings'隐藏首列，height为表格行数（除首行外）
         
-        tree["columns"]=("row0","row1","row2","row3","row4","row5","row6","row7")
+        tree["columns"]=("column0","column1","column2","column3","column4","column5","column6","column7")
 
         # 表格的标题
-        tree.column("row0", width=50, anchor="center")
-        tree.column("row1", anchor="center")
-        tree.column("row2", anchor="center")
-        tree.column("row3", anchor="center")
-        tree.column("row4", anchor="center")
-        tree.column("row5", anchor="center")
-        tree.column("row6", anchor="center")
-        tree.column("row7", anchor="center")
+        tree.column("column0", width=50, anchor="center")
+        tree.column("column1", anchor="center")
+        tree.column("column2", anchor="center")
+        tree.column("column3", anchor="center")
+        tree.column("column4", anchor="center")
+        tree.column("column5", anchor="center")
+        tree.column("column6", anchor="center")
+        tree.column("column7", anchor="center")
         
-        tree.heading("row0", text="时间")  # 显示表头  
-        tree.heading("row1", text="星期一")  
-        tree.heading("row2", text="星期二")
-        tree.heading("row3", text="星期三")
-        tree.heading("row4", text="星期四")
-        tree.heading("row5", text="星期五")
-        tree.heading("row6", text="星期六")
-        tree.heading("row7", text="星期日") 
+        tree.heading("column0", text="时间")  # 显示表头  
+        tree.heading("column1", text="星期一")  
+        tree.heading("column2", text="星期二")
+        tree.heading("column3", text="星期三")
+        tree.heading("column4", text="星期四")
+        tree.heading("column5", text="星期五")
+        tree.heading("column6", text="星期六")
+        tree.heading("column7", text="星期日") 
 
         # 向表格中插入数据
         for item in bookList:
@@ -467,26 +467,26 @@ class Application(tk.Frame):
         tree=ttk.Treeview(frame, show='headings',height=1)
         # PS. show='headings'隐藏首列，height为表格行数（除首行外）
         
-        tree["columns"]=("row0","row1","row2","row3","row4","row5","row6","row7")
+        tree["columns"]=("column0","column1","column2","column3","column4","column5","column6","column7")
 
         # 表格的标题
-        tree.column("row0", width=220, anchor="center")
-        tree.column("row1", anchor="center")
-        tree.column("row2", width=50, anchor="center")
-        tree.column("row3", anchor="center")
-        tree.column("row4", width=150, anchor="center")
-        tree.column("row5", width=100, anchor="center")
-        tree.column("row6", width=50, anchor="center")
-        tree.column("row7", width=100, anchor="center")
+        tree.column("column0", width=220, anchor="center")
+        tree.column("column1", anchor="center")
+        tree.column("column2", width=50, anchor="center")
+        tree.column("column3", anchor="center")
+        tree.column("column4", width=150, anchor="center")
+        tree.column("column5", width=100, anchor="center")
+        tree.column("column6", width=50, anchor="center")
+        tree.column("column7", width=100, anchor="center")
         
-        tree.heading("row0", text="选课课号")  # 显示表头  
-        tree.heading("row1", text="课程名称")  
-        tree.heading("row2", text="姓名")
-        tree.heading("row3", text="考试时间")
-        tree.heading("row4", text="考试地点")
-        tree.heading("row5", text="考试形式")
-        tree.heading("row6", text="座位号")
-        tree.heading("row7", text="校区") 
+        tree.heading("column0", text="选课课号")  # 显示表头  
+        tree.heading("column1", text="课程名称")  
+        tree.heading("column2", text="姓名")
+        tree.heading("column3", text="考试时间")
+        tree.heading("column4", text="考试地点")
+        tree.heading("column5", text="考试形式")
+        tree.heading("column6", text="座位号")
+        tree.heading("column7", text="校区") 
 
         # 向表格中插入数据
         for item in bookList:
