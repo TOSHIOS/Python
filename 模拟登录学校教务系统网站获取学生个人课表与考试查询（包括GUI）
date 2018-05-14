@@ -9,6 +9,8 @@ from requests import exceptions
 # 解析HTML和XML
 import bs4
 
+import lxml
+
 # 操作系统的命令操作模块
 import os
 
@@ -208,7 +210,7 @@ class Application(tk.Frame):
         #print(test.text)
 
         # 弹窗输出登录是否成功信息，以及成功登录后的用户姓名
-        soup = bs4.BeautifulSoup(test.text, 'html.parser')
+        soup = bs4.BeautifulSoup(test.text, 'lxml')
         try:
             name = soup.find('span', attrs={'id': 'xhxm'}).text
             list = []
@@ -229,7 +231,7 @@ class Application(tk.Frame):
         # 获取登陆界面的html
         html = session.get(url)
         
-        soup = bs4.BeautifulSoup(html.text, 'html.parser')
+        soup = bs4.BeautifulSoup(html.text, 'lxml')
         # 获取验证参数__VIEWSTATE
         __VIEWSTATE = soup.find('input', attrs={'name': '__VIEWSTATE'})['value']
         #print(__VIEWSTATE)
@@ -275,7 +277,7 @@ class Application(tk.Frame):
         # 获取课程表网页内容信息
         res = session.get(schedule_url,headers=header_schedule)
         
-        soup = bs4.BeautifulSoup(res.text, 'html.parser')
+        soup = bs4.BeautifulSoup(res.text, 'lxml')
         # print(soup)
 
         # 根据choice的值，修改标签参数tableLabel
